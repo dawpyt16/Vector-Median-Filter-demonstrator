@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog, ttk, HORIZONTAL, LEFT, TOP
-
-
 import cv2
 import numpy as np
 from PIL import ImageTk, Image
@@ -9,8 +7,6 @@ from imgaug import augmenters as iaa
 import atexit
 import os
 import os.path
-
-from skimage.util import random_noise
 
 root = tk.Tk()
 root.title('Vector Median Filter demo')
@@ -24,8 +20,8 @@ def exit_handler():
 
 
 def addImg():
-    panel_l.pack_forget()
-    panel_r.pack_forget()
+    panel_left.pack_forget()
+    panel_right.pack_forget()
     images.clear()
     images_noise.clear()
     filename = filedialog.askopenfilename(title="Select File")
@@ -33,9 +29,9 @@ def addImg():
     save_left(filename)
 
 
-def add_sp():
+def add_salt_and_pepper_noise():
     img = cv2.imread("vmf_l.png")
-    s_val = w1.get() / 10
+    s_val = scale_frame.get() / 10
     aug = iaa.SaltAndPepper(p=s_val)
     img_arr = aug.augment_image(img)
     cv2.imwrite("vmf_r.png", img_arr)
@@ -43,19 +39,10 @@ def add_sp():
     save_right("vmf_r.png")
 
 
-def add_sp2():
-    img = cv2.imread("vmf_l.png", 0)
-    img_arr = random_noise(img, mode='s&p', amount=0.011)
-    cv2.imwrite("vmf_r.png", img_arr)
-    images_noise.append(img_arr)
-    save_right("vmf_r.png")
-
-
-def add_g():
+def add_gaussian_noise():
     img = cv2.imread("vmf_l.png")
     mean = 0
-    var = 10
-    sigma = w1.get()
+    sigma = scale_frame.get()
     if sigma == 1:
         sigma = 0.5
     elif sigma == 2:
@@ -71,7 +58,6 @@ def add_g():
     save_right("vmf_r.png")
 
 
-
 def runApp():
     win_size = selected_window.get()
     img = cv2.imread("./vmf_l.png")
@@ -84,54 +70,51 @@ def save_left(filename):
     imgf = cv2.imread(filename)
     cv2.imwrite("vmf_l.png", imgf)
     img_photo = ImageTk.PhotoImage(Image.open(filename).resize((400, 400), Image.ANTIALIAS))
-    panel_l.pack_forget()
-    panel_l.photo = img_photo
-    panel_l.configure(image=img_photo)
-    panel_l.pack()
+    panel_left.pack_forget()
+    panel_left.photo = img_photo
+    panel_left.configure(image=img_photo)
+    panel_left.pack()
+
 
 def save_right(filename):
     imgf = cv2.imread(filename)
     cv2.imwrite("vmf_r.png", imgf)
     img_photo = ImageTk.PhotoImage(Image.open(filename).resize((400, 400), Image.ANTIALIAS))
-    panel_r.pack_forget()
-    panel_r.photo = img_photo
-    panel_r.configure(image=img_photo)
-    panel_r.pack()
+    panel_right.pack_forget()
+    panel_right.photo = img_photo
+    panel_right.configure(image=img_photo)
+    panel_right.pack()
+
+
+def save_image(filename, save_filename, panel):
+    imgf = cv2.imread(filename)
+    cv2.imwrite(save_filename, imgf)
+    img_photo = ImageTk.PhotoImage(Image.open(filename).resize((400, 400), Image.ANTIALIAS))
+    panel.pack_forget()
+    panel.photo = img_photo
+    panel.configure(image=img_photo)
+    panel.pack()
 
 
 def save_left2():
-    filename = "vmf_r.png"
-    imgf = cv2.imread(filename)
-    cv2.imwrite("vmf_l.png", imgf)
-    img_photo = ImageTk.PhotoImage(Image.open(filename).resize((400, 400), Image.ANTIALIAS))
-    panel_l.pack_forget()
-    panel_l.photo = img_photo
-    panel_l.configure(image=img_photo)
-    panel_l.pack()
+    save_image("vmf_r.png", "vmf_l.png", panel_left)
 
 
 def save_right2():
-    filename = "vmf_l.png"
-    imgf = cv2.imread(filename)
-    cv2.imwrite("vmf_r.png", imgf)
-    img_photo = ImageTk.PhotoImage(Image.open(filename).resize((400, 400), Image.ANTIALIAS))
-    panel_r.pack_forget()
-    panel_r.photo = img_photo
-    panel_r.configure(image=img_photo)
-    panel_r.pack()
+    save_image("vmf_l.png", "vmf_r.png", panel_right)
 
 
 def save_img_left():
     im = Image.open('vmf_l.png')
     file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("PNG file", "*.png"),
-                                                                                      ("All Files", "*.*")))
+                                                                                  ("All Files", "*.*")))
     if file:
         abs_path = os.path.abspath(file.name)
         out = im
         out.save(abs_path)
 
 
-def save_img_rigth():
+def save_img_right():
     im = Image.open('vmf_r.png')
     file = filedialog.asksaveasfile(mode='w', defaultextension=".png", filetypes=(("PNG file", "*.png"),
                                                                                   ("All Files", "*.*")))
@@ -142,58 +125,58 @@ def save_img_rigth():
 
 
 def toggle():
-
-    if change_language.config('text')[-1] == 'PL':
-        change_language.config(text='ENG')
-        openFile.config(text="Wybierz Plik")
-        addNoise_sp.config(text="Szum Sól i Pieprz")
-        addNoise_g.config(text="Szum Gaussowski")
-        l.config(text="Wybierz okno")
-        save_l2.config(text="Zapisz Lewy Obraz")
-        save_r2.config(text="Zapisz Prawy Obraz")
-        title.config(text="Wektorowa Filtracja Medianowa - demonstrator")
+    if change_language_button.config('text')[-1] == 'PL':
+        change_language_button.config(text='ENG')
+        open_file_button.config(text="Wybierz Plik")
+        add_salt_and_pepper_noise_button.config(text="Szum Sól i Pieprz")
+        add_gaussian_noise_button.config(text="Szum Gaussowski")
+        select_window_label_frame.config(text="Wybierz okno")
+        save_left_image_button.config(text="Zapisz Lewy Obraz")
+        save_right_image_button.config(text="Zapisz Prawy Obraz")
+        title_label.config(text="Wektorowa Filtracja Medianowa - demonstrator")
     else:
-        change_language.config(text='PL')
-        openFile.config(text="Open File")
-        addNoise_sp.config(text="Salt&Pepper Noise")
-        addNoise_g.config(text="Gaussian Noise")
-        l.config(text="Select Window")
-        save_l2.config(text="Save Left image")
-        save_r2.config(text="Save Rigth image")
-        title.config(text="Vector Median Filter - demo")
+        change_language_button.config(text='PL')
+        open_file_button.config(text="Open File")
+        add_salt_and_pepper_noise_button.config(text="Salt&Pepper Noise")
+        add_gaussian_noise_button.config(text="Gaussian Noise")
+        select_window_label_frame.config(text="Select Window")
+        save_left_image_button.config(text="Save Left image")
+        save_right_image_button.config(text="Save Rigth image")
+        title_label.config(text="Vector Median Filter - demo")
 
 
-box = tk.Frame(master=root, width=1200, height=400, bg='lightgray')
-box2 = tk.Frame(master=root, width=1200, height=15, bg='lightgray')
-box3 = tk.Frame(master=root, width=1200, bg='lightgray')
-frame = tk.Frame(master=box, width=400, height=400)
-frame_l = tk.Frame(master=box, width=400, height=400, bg='lightgray')
-frame_r = tk.Frame(master=box, width=400, height=400, bg='lightgray')
+main_box = tk.Frame(master=root, width=1200, height=400, bg='lightgray')
+title_box = tk.Frame(master=root, width=1200, height=15, bg='lightgray')
+main_frame = tk.Frame(master=main_box, width=400, height=400)
+left_frame = tk.Frame(master=main_box, width=400, height=400, bg='lightgray')
+right_frame = tk.Frame(master=main_box, width=400, height=400, bg='lightgray')
 
-frame_1 = tk.Frame(master=frame)
-frame_2 = tk.Frame(master=frame)
-frame_3 = tk.Frame(master=frame)
-frame_4 = tk.Frame(master=frame)
+frame_1 = tk.Frame(master=main_frame)
+frame_2 = tk.Frame(master=main_frame)
+frame_3 = tk.Frame(master=main_frame)
+frame_4 = tk.Frame(master=main_frame)
 
-panel_l = tk.Label(frame_l)
-panel_r = tk.Label(frame_r)
+panel_left = tk.Label(left_frame)
+panel_right = tk.Label(right_frame)
 
-openFile = tk.Button(master=frame_1, text="Open File", width=12, padx=10, pady=5, fg="white", bg="#263D42",
-                     command=addImg)
-change_language = tk.Button(master=frame_1, text="PL", width=12, padx=10, pady=5, fg="white", bg="#263D42",
-                            command=toggle)
-addNoise_sp = tk.Button(master=frame, text="Salt&Pepper", width=30, padx=10, pady=5, fg="white", bg="#263D42",
-                        command=add_sp)
-addNoise_g = tk.Button(master=frame, text="Gaussian Noise", width=30, padx=10, pady=5, fg="white", bg="#263D42",
-                       command=add_g)
+open_file_button = tk.Button(master=frame_1, text="Open File", width=12, padx=10, pady=5, fg="white", bg="#263D42",
+                             command=addImg)
+change_language_button = tk.Button(master=frame_1, text="PL", width=12, padx=10, pady=5, fg="white", bg="#263D42",
+                                   command=toggle)
+add_salt_and_pepper_noise_button = tk.Button(master=main_frame, text="Salt&Pepper", width=30, padx=10, pady=5,
+                                             fg="white", bg="#263D42",
+                                             command=add_salt_and_pepper_noise)
+add_gaussian_noise_button = tk.Button(master=main_frame, text="Gaussian Noise", width=30, padx=10, pady=5, fg="white",
+                                      bg="#263D42",
+                                      command=add_gaussian_noise)
 
-w1 = tk.Scale(frame, from_=1, to=3, orient=HORIZONTAL)
+scale_frame = tk.Scale(main_frame, from_=1, to=3, orient=HORIZONTAL)
 
-l = tk.Label(frame_4, text="Select window")
-l.config(font=("Courier", 14))
+select_window_label_frame = tk.Label(frame_4, text="Select window")
+select_window_label_frame.config(font=("Courier", 14))
 
-title = tk.Label(box2, text="Vector Median Filter - demo")
-title.config(font=("Courier", 14))
+title_label = tk.Label(title_box, text="Vector Median Filter - demo")
+title_label.config(font=("Courier", 14))
 
 selected_window = tk.IntVar()
 windows = (
@@ -211,41 +194,41 @@ for w in windows:
     )
     r.pack(anchor=tk.W, padx=5, pady=5)
 
+runApp = tk.Button(master=main_frame, text="VMF", width=30, padx=10, pady=5, fg="white", bg="#263D42", command=runApp)
 
-runApp = tk.Button(master=frame, text="VMF", width=30, padx=10, pady=5, fg="white", bg="#263D42", command=runApp)
+save_right_to_left_button = tk.Button(master=main_frame, text="<<<", width=30, padx=10, pady=5, fg="white",
+                                      bg="#263D42", command=save_left2)
+save_left_to_right_button = tk.Button(master=main_frame, text=">>>", width=30, padx=10, pady=5, fg="white",
+                                      bg="#263D42", command=save_right2)
 
-save_l = tk.Button(master=frame, text="<<<", width=30, padx=10, pady=5, fg="white", bg="#263D42", command=save_left2)
-save_r = tk.Button(master=frame, text=">>>", width=30, padx=10, pady=5, fg="white", bg="#263D42", command=save_right2)
+save_left_image_button = tk.Button(master=left_frame, text="Save Left image", width=55, padx=10, pady=5, fg="white",
+                                   bg="#263D42", command=save_img_left)
+save_right_image_button = tk.Button(master=right_frame, text="Save Rigth image", width=55, padx=10, pady=5, fg="white",
+                                    bg="#263D42", command=save_img_right)
 
-save_l2 = tk.Button(master=frame_l, text="Save Left image", width=55, padx=10, pady=5, fg="white", bg="#263D42", command=save_img_left)
-save_r2 = tk.Button(master=frame_r, text="Save Rigth image", width=55, padx=10, pady=5, fg="white", bg="#263D42", command=save_img_rigth)
-#empty = tk.Label(box3, text="", width=10)
-# save_imgs = tk.Button(master=frame, text="Save images", width=30, padx=10, pady=5, fg="white", bg="#263D42", command=save_img_r)
+title_box.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
+title_label.pack(fill=tk.BOTH, expand=True)
+main_box.pack(fill=tk.BOTH, expand=True)
 
-box2.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
-title.pack(fill=tk.BOTH, expand=True)
-box.pack(fill=tk.BOTH, expand=True)
-#box3.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True)
-save_l2.pack(side=tk.BOTTOM, fill='x')
-#empty.pack(side=tk.LEFT, expand=True)
-save_r2.pack(side=tk.BOTTOM, fill='x')
-frame_l.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
-frame.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
-frame_r.pack(fill=tk.BOTH, side=tk.RIGHT, expand=True)
+save_left_image_button.pack(side=tk.BOTTOM, fill='x')
+save_right_image_button.pack(side=tk.BOTTOM, fill='x')
+
+left_frame.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
+main_frame.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
+right_frame.pack(fill=tk.BOTH, side=tk.RIGHT, expand=True)
 frame_1.pack(side=TOP)
-openFile.pack(padx=5, pady=5, in_=frame_1, side=LEFT)
-change_language.pack(padx=5, pady=5, in_=frame_1, side=LEFT)
-addNoise_sp.pack(fill='x', padx=5, pady=5)
-addNoise_g.pack(fill='x', padx=5, pady=5)
-w1.pack(fill='x', padx=5, pady=5)
+open_file_button.pack(padx=5, pady=5, in_=frame_1, side=LEFT)
+change_language_button.pack(padx=5, pady=5, in_=frame_1, side=LEFT)
+add_salt_and_pepper_noise_button.pack(fill='x', padx=5, pady=5)
+add_gaussian_noise_button.pack(fill='x', padx=5, pady=5)
+scale_frame.pack(fill='x', padx=5, pady=5)
 frame_3.pack()
 frame_4.pack()
-l.pack()
+select_window_label_frame.pack()
 frame_2.pack()
 runApp.pack(fill='x', pady=5, padx=5)
-save_l.pack(fill='x', padx=5)
-save_r.pack(fill='x', padx=5, pady=(0, 5))
-# save_imgs.pack(fill='x', padx=5, pady=5)
+save_right_to_left_button.pack(fill='x', padx=5)
+save_left_to_right_button.pack(fill='x', padx=5, pady=(0, 5))
 
 atexit.register(exit_handler)
 
